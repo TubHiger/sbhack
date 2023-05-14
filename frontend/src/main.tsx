@@ -8,6 +8,7 @@ import App from "./App";
 import FeedbackView from "./components/Feedback";
 import Uploader from "./components/Uploader";
 import Layout from "./components/Layout";
+
 import About from "./components/About";
 
 import client from "./apollo-client";
@@ -39,6 +40,7 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
               <Route index element={<App />} />
               <Route path="/upload" element={<Uploader />} />
               <Route path="/feedback" element={<FeedbackView />} />
+
               <Route path="/about" element={<About />} />
             </Route>
           </Routes>

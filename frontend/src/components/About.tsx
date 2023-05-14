@@ -46,6 +46,7 @@ const About = () => {
                 "0px 2px 4px rgba(0, 0, 0, 0.5), 0px 4px 6px rgba(0, 0, 0, 0.25)",
             }}
           ></p>
+
           <br />
           <p
             className="text-left text-white font-bold text-2xl"

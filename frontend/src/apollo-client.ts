@@ -8,6 +8,8 @@ import {
 } from "@apollo/client";
 import { createUploadLink } from "apollo-upload-client";
 
+
+
 //extending from the User type defined in the schema
 //to dd the vaccination status
 const typeDefs = gql`
@@ -34,6 +36,7 @@ const delay = setContext(
 
 const cache = new InMemoryCache();
 const http = createUploadLink({
+
   //uri: "https://ambrosia-garden.vercel.app/graphql",
   uri: "http://localhost:3000/graphql",
 });

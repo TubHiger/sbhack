@@ -20,24 +20,7 @@ import { Link, useNavigate } from "react-router-dom";
 import backgroundPic from "../assets/resumai-background.jpg";
 import { useDropzone, DropzoneOptions } from "react-dropzone";
 
-//define the graphql mutation to handle the file upload:
-// const UPLOAD_RESUME = gql`
-//   mutation UploadResume($file: Upload!) {
-//     saveResume(file: $file)
-//     # {
-//     #   success
-//     #   message
-//     #   file {
-//     #     filename
-//     #     mimetype
-//     #     encoding
-//     #   }
-//     # }
-//   }
-// `;
 
-// const [uploadResumeMutation, uploadedResumeResponse] =
-//   useMutation(UPLOAD_RESUME);
 
 type ResumeUploadProps = {
   onFileUpload: (file: File) => void;
@@ -76,6 +59,7 @@ const Uploader = () => {
   //const navigate = useNavigate();
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
@@ -118,6 +102,7 @@ const Uploader = () => {
   const handleSelectedFile = (file: File) => {
     setSelectedFile(file);
   };
+
   /* the react component to handle resume uploads from local disk and send data to backend for classification*/
   return (
     <div
@@ -135,7 +120,9 @@ const Uploader = () => {
           {/* ... */}
           <div className="mt-4">
             <h1 className="block mb-4 text-white">Upload your resume (PDF):</h1>
+
             <ResumeUpload onFileUpload={handleSelectedFile} />
+
           </div>
         </div>
         {/* ... */}
