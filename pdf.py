@@ -1,0 +1,107 @@
+import fitz #pymupdf
+import re
+import pandas as pd
+from unidecode import unidecode
+import numpy as np
+
+
+def pdf_to_span_df(resume_pdf):
+    doc = fitz.open(resume_pdf)
+    block_dict = {}
+    page_num = 1
+
+    for page in doc:
+        file_dict = page.get_text('dict')
+        block = file_dict['blocks']
+        block_dict[page_num] = block
+        page_num += 1
+    
+    doc.close()
+
+    spans = pd.DataFrame(columns = ['xmin', 'ymin', 
+                                    'xmax', 'ymax', 
+                                    'text', 'tag'])
+
+    rows = []
+
+    for page_num, blocks in block_dict.items():
+
+        for block in blocks:
+
+            if block['type'] == 0:
+                for line in block['lines']:
+                    for span in line['spans']:
+                        xmin, ymin, xmax, ymax = list(span['bbox'])
+                        font_size = span['size']
+                        text = unidecode(span['text'])
+                        span_font = span['font']
+
+                        is_upper = False
+                        is_bold = False
+
+                        if 'bold' in span_font.lower():
+                            is_bold = True
+
+                        if re.sub("[\(\[].*?[\)\]]", "", text).isupper():
+                            is_upper = True
+
+                        if text.replace(' ', '') != '':
+                            rows.append((xmin, ymin, xmax, ymax, text, 
+                                     is_upper, is_bold, span_font, font_size))
+    
+    span_df = pd.DataFrame(rows, columns= ['xmin', 'ymin', 'xmax', 'ymax', 
+                                       'text', 'is_upper', 'is_bold', 
+                                       'span_font', 'font_size'])
+
+    return span_df
+    
+
+
+def get_heading_info(span_df):
+    keywords = ['job history', 'employment', 'work history', 
+                'experience', 'involvement']
+    
+    body_size = span_df['font_size'].value_counts().idxmax()
+    body_font = span_df['span_font'].value_counts().idxmax()
+
+    heading = span_df[ ((span_df['font_size'] > body_size) | (span_df['span_font'] != body_font)) & (span_df['text'].str.lower().str.contains('|'.join(keywords))) ]
+    
+    heading_indices = heading.index.tolist()
+    heading_font = heading['span_font'].iloc[0]
+    heading_size = heading['font_size'].iloc[0]
+
+    return heading_indices, heading_font, heading_size
+
+
+
+def get_work_text(span_df):
+    heading_indices, heading_font, heading_size = get_heading_info(span_df)
+    work_text_dict = {}
+
+    for index in heading_indices:
+        heading_title = span_df.iloc[index].text.rstrip()
+        next_heading = span_df[(span_df['span_font'] == heading_font) & (span_df['font_size'] == heading_size)].loc[index + 1:]
+
+        if not next_heading.empty:
+            next_heading_index = next_heading.index[0]
+            work_text_df = span_df.loc[index + 1: next_heading_index - 1]
+            work_text = work_text_df['text'].str.cat(sep = ' ')
+            work_text_dict[heading_title] = work_text
+            continue
+        
+        work_text_df = span_df.loc[index + 1:]
+        work_text = work_text_df['text'].str.cat(sep = ' ') 
+        work_text_dict[heading_title] = work_text
+            
+    
+    return work_text_dict
+
+
+# Use this function 
+# not sure how to get it to work with the pdf file
+def path_to_work_dict(filepath):
+    span_df = pdf_to_span_df(filepath)
+    return get_work_text(span_df)
+
+
+
