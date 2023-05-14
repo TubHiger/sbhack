@@ -11,6 +11,7 @@ import {
   faUserPlus,
 } from "@fortawesome/free-solid-svg-icons";
 //import { useQuery, useMutation } from "@apollo/react-hooks";
+
 import gql from "graphql-tag";
 import axios from "axios";
 import { useQuery, useMutation } from "@apollo/react-hooks";
@@ -19,27 +20,24 @@ import { Link, useNavigate } from "react-router-dom";
 import backgroundPic from "../assets/resumai-background.jpg";
 import { useDropzone, DropzoneOptions } from "react-dropzone";
 
-// const USER_DETAILS = gql`
-//   fragment SignedInUserDetails on User {
-//     username
-//     imgUrl
-//     university
-//     major
-//     favCuisines
-//     email
-//     name
-//     bio
+//define the graphql mutation to handle the file upload:
+// const UPLOAD_RESUME = gql`
+//   mutation UploadResume($file: Upload!) {
+//     saveResume(file: $file)
+//     # {
+//     #   success
+//     #   message
+//     #   file {
+//     #     filename
+//     #     mimetype
+//     #     encoding
+//     #   }
+//     # }
 //   }
 // `;
 
-// const VERIFY_USER = gql`
-//   mutation ValidateUser($input: UserInputLogin!) {
-//     userLogin(input: $input) {
-//       ...SignedInUserDetails
-//     }
-//   }
-//   ${USER_DETAILS}
-// `;
+// const [uploadResumeMutation, uploadedResumeResponse] =
+//   useMutation(UPLOAD_RESUME);
 
 type ResumeUploadProps = {
   onFileUpload: (file: File) => void;
@@ -75,60 +73,51 @@ const ResumeUpload: React.FC<ResumeUploadProps> = ({ onFileUpload }) => {
 };
 
 const Uploader = () => {
-  //implement for recommendations and userprofile page
+  //const navigate = useNavigate();
 
-  const navigate = useNavigate();
-
-  //const [validateUser, validatedUser] = useMutation(VERIFY_USER);
-  //const validatedUser = useQuery(VERIFY_USER); //the response implies that the user has been validated in the backend
-
-  //const [confirmPasswordError, setConfirmPasswordError] = useState<string>("");
-
-  const [formData, setFormData] = useState({
-    password: "",
-    username: "",
-  });
-
-  //updates the formData above whenever a change is detected in the text field via user interaction
-  // const handleChange = (e: any) => {
-  //   setFormData({ ...formData, [e.target.name]: e.target.value });
-  // };
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
 
-    // Send the pdf to the backend/API for text classification
-    try {
-      const { username, password } = formData; //destructuring the data to be passed as a req in createUser
-      //graphql req: input payload
-      const input = {
-        username, //this value has to be passed in from the signup flow to establish the relationship
-        password,
-      };
-
-      // try {
-      //   const signedUser = await validateUser({
-      //     variables: { input }, //the input has to match the input schema type defined in backend
-      //   });
-      //   // signedUserData = signedUser["userLogin"]
-      //   console.log("API response:", signedUser.data);
-      //   navigate("/home", { state: { signedUser } });
-      // } catch (error) {
-      //   console.error("API error:", error);
-      //   alert("incorrect credentials");
-      //   // Handle the error, e.g., show error message, etc.
-      // }
-    } catch (error) {
-      console.error("API error:", error);
-      // Handle the error, e.g., show error message, etc.
-      //implement toastify
+    if (selectedFile) {
+      handleFileUpload(selectedFile);
     }
+
+    // Send the pdf to the backend/API for text classification
   };
 
-  function handleFileUpload(file: File): void {
-    throw new Error("Function not implemented.");
+  async function handleFileUpload(file: File): Promise<void> {
+    //throw new Error("Function not implemented.");
+    // Make an API call to upload the file
+    try {
+      // const { data } = await uploadResumeMutation({
+      //   variables: { file },
+      // });
+      // console.log("File upload response:", data);
+      // //console.log("File uploaded:", data.uploadResume.file);
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("http://localhost:3000/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+      console.log("File upload response:", data);
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      // Handle the error, e.g., show an error message, etc.
+    }
+
+    console.log("File uploaded:", file);
   }
 
+  const handleSelectedFile = (file: File) => {
+    setSelectedFile(file);
+  };
   /* the react component to handle resume uploads from local disk and send data to backend for classification*/
   return (
     <div
@@ -146,7 +135,7 @@ const Uploader = () => {
           {/* ... */}
           <div className="mt-4">
             <h1 className="block mb-4 text-white">Upload your resume (PDF):</h1>
-            <ResumeUpload onFileUpload={handleFileUpload} />
+            <ResumeUpload onFileUpload={handleSelectedFile} />
           </div>
         </div>
         {/* ... */}
