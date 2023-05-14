@@ -5,10 +5,10 @@ import "./styles/transitions.css";
 import ReactDOM from "react-dom/client";
 //import { createRoot } from "react-dom";
 import App from "./App";
-import RegistrationForm from "./components/SignUp";
+import FeedbackView from "./components/Feedback";
 import Uploader from "./components/Uploader";
 import Layout from "./components/Layout";
-import HomePageNav from "./components/HomeNav";
+
 import About from "./components/About";
 
 import client from "./apollo-client";
@@ -39,7 +39,8 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
             >
               <Route index element={<App />} />
               <Route path="/upload" element={<Uploader />} />
-              <Route path="/feedback" element={<RegistrationForm />} />
+              <Route path="/feedback" element={<FeedbackView />} />
+
               <Route path="/about" element={<About />} />
             </Route>
           </Routes>
