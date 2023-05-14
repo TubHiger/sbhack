@@ -66,21 +66,23 @@ def get_heading_info(span_df):
 
     heading = span_df[ ((span_df['font_size'] > body_size) | (span_df['span_font'] != body_font)) & (span_df['text'].str.lower().str.contains('|'.join(keywords))) ]
     
-    heading_indices = heading.index.tolist()
+    #heading_indices = heading.index.tolist()
     heading_font = heading['span_font'].iloc[0]
     heading_size = heading['font_size'].iloc[0]
 
-    return heading_indices, heading_font, heading_size
+    return heading_font, heading_size, #heading_indices
 
 
 
 def get_work_text(span_df):
-    heading_indices, heading_font, heading_size = get_heading_info(span_df)
+    heading_font, heading_size = get_heading_info(span_df)
+    title_df = span_df[(span_df['span_font'] == heading_font) & (span_df['font_size'] == heading_size)]
+    heading_indices = title_df.index.tolist()
     work_text_dict = {}
 
     for index in heading_indices:
         heading_title = span_df.iloc[index].text.rstrip()
-        next_heading = span_df[(span_df['span_font'] == heading_font) & (span_df['font_size'] == heading_size)].loc[index + 1:]
+        next_heading = title_df.loc[index + 1:]
 
         if not next_heading.empty:
             next_heading_index = next_heading.index[0]
@@ -102,6 +104,5 @@ def get_work_text(span_df):
 def path_to_work_dict(filepath):
     span_df = pdf_to_span_df(filepath)
     return get_work_text(span_df)
-
 
 
